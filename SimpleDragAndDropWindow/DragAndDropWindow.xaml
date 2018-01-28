@@ -6,12 +6,12 @@
         xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit"
         mc:Ignorable="d"
         Background="Gray"
-        Title="DragAndDropWindow"
+        Title="XML API Uploader"
         Height="350" Width="525" MinWidth="400" MinHeight="300" >
   <Grid Margin="5,5,5,5">
       <Grid.RowDefinitions>
         <RowDefinition Height="Auto"/>
-        <RowDefinition AllowDrop="True"  Height="*"/>
+        <RowDefinition Height="*"/>
         <RowDefinition Height="Auto"/>
       </Grid.RowDefinitions>
 
@@ -28,9 +28,11 @@
                      Text="Search for a file"/>
 
       <Button VerticalContentAlignment="Center"
+              VerticalAlignment="Center"
+              HorizontalAlignment="Center"
               HorizontalContentAlignment="Center"
               BorderThickness="0"
-              Padding="2,2,2,2"
+              Padding="3,3,3,3"
               Click="ButtonBase_OnClick"
               ToolTip="Open file browser dialog"
               Grid.Column="1" Margin="0,5,5,5"  Content="Open"/>
@@ -45,8 +47,8 @@
              DragEnter="TextBox_XMlDisplay_OnDragEnter"
              DragLeave="TextBox_XMlDisplay_OnDragLeave"
              AllowDrop="True"
-             SyntaxHighlighting="XML"
              IsReadOnly="True"
+             SyntaxHighlighting="XML"
              VerticalContentAlignment="Center" HorizontalContentAlignment="Center">
       </avalonedit:TextEditor>
 
@@ -67,17 +69,36 @@
         </Grid.ColumnDefinitions>
 
         <Button
-          ToolTip="Validte the XML against the saved schema" Click="Btn_ValidateSchema" x:Name="Btn_Validate" IsEnabled="False"
-          Padding="2,2,2,2" Grid.Column="0" Margin="0,0,20,0"  HorizontalAlignment="Left" Content="Validate XML"/>
+          ToolTip="Validate the XML against the infered schema. This assumes the sample file is a valid XML."
+         ToolTipService.InitialShowDelay="0"
+          Click="Btn_ValidateSchema" x:Name="Btn_Validate" IsEnabled="False"
+          Padding="3,3,3,3" Grid.Column="0" Margin="0,0,20,0"
+          BorderThickness="0"
+          VerticalAlignment="Center" 
+          HorizontalAlignment="Left" Content="Validate XML"/>
 
-        <TextBlock Grid.Column="1" Margin="5,0,5,0" VerticalAlignment="Center"   Text="API"></TextBlock>
-        <ComboBox Grid.Column="2" Margin="0,0,0,0"  MinWidth="100"  Text="Process Code"></ComboBox>
+        <TextBlock Grid.Column="1" Margin="5,0,5,0"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center" Text="Target API"
+                    Foreground="White"
+                   ></TextBlock>
+
+        <ComboBox Grid.Column="2" Margin="0,0,0,0"
+                  x:Name="CbmBox_API"
+                  Padding="3,3,3,3"
+                  BorderThickness="0"
+                  MinWidth="100"  Text="Process Code"></ComboBox>
 
       </Grid>
 
-      <Button  Padding="2,2,2,2" Grid.Column="1" Width="70"
-                ToolTip="Upload file to nMarket"
-               HorizontalAlignment="Right" BorderThickness="0" Content="Upload"></Button>
+      <Button   Grid.Column="1" Width="70"
+                ToolTip="Upload file to API"
+               x:Name="btn_Upload"
+               VerticalAlignment="Center" 
+               BorderThickness="0"
+               Padding="3,3,3,3"
+               Click="Btn_Upload_OnClick"   
+               HorizontalAlignment="Right"  Content="Upload"/>
 
     </Grid>
 

@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Xml;
 using System.Xml.Schema;
@@ -16,12 +18,18 @@ namespace SimpleDragAndDropWindow
     public DragAndDropWindow()
     {
       InitializeComponent();
-      
+
       SetWindowToDefaults();
+
+      _apiProcessCodeDict = new Dictionary<string, string>();
+
+      PopulateFakeAPIs();
+
+      PopulateApiDropdown();
     }
 
     private string _currentLoadedFilePath;
-    private string _initialTextDropWindowText = "Drop a file here";
+    private string _initialTextDropWindowText = "Drop an XML file here..";
 
     private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
     {
@@ -88,6 +96,7 @@ namespace SimpleDragAndDropWindow
       if (!File.Exists(filePath) ||
           !string.Equals(Path.GetExtension(filePath), ".xml", StringComparison.OrdinalIgnoreCase))
       {
+        if (!FileLoaded) SetWindowToDefaults();
         throw new Exception("Error opening file, ensure the file is a valid XML file.");
       }
 
@@ -103,7 +112,6 @@ namespace SimpleDragAndDropWindow
         TextBox_XMlDisplay.VerticalContentAlignment = 0;
         TextBox_XMlDisplay.FontSize = 12;
         TextBox_XMlDisplay.FontFamily = new FontFamily("Consolas");
-        TextBox_XMlDisplay.Opacity = 1;
         TextBox_XMlDisplay.IsReadOnly = false;
 
         GenerateSchema(filePath);
@@ -115,26 +123,21 @@ namespace SimpleDragAndDropWindow
         //Any Errors then reset all the properties, only at this point, we don't want to empty the
         //window of the old data yet
         SetWindowToDefaults();
-        throw;
+        throw ex;
       }
 
     }
-
-
-
 
     private void SetWindowToDefaults()
     {
       _currentLoadedFilePath = TextBox_FilePath.Text = string.Empty;
 
       TextBox_XMlDisplay.Text = _initialTextDropWindowText;
+      TextBox_XMlDisplay.IsReadOnly = true;
       TextBox_XMlDisplay.HorizontalContentAlignment = HorizontalAlignment.Center;
       TextBox_XMlDisplay.VerticalContentAlignment = VerticalAlignment.Center;
       TextBox_XMlDisplay.FontSize = 20;
       TextBox_XMlDisplay.FontFamily = new FontFamily("Arial");
-      TextBox_XMlDisplay.Opacity = 0.4;
-      TextBox_XMlDisplay.IsReadOnly = true;
-
       Btn_Validate.IsEnabled = false;
 
     }
@@ -148,9 +151,8 @@ namespace SimpleDragAndDropWindow
 
     private void TextBox_XMlDisplay_OnDragLeave(object sender, DragEventArgs e)
     {
-      TextBox_XMlDisplay.Opacity = FileLoaded ? 1 : 0.7;
+      TextBox_XMlDisplay.Opacity = 1;
     }
-
 
     private bool FileLoaded => !string.IsNullOrEmpty(_currentLoadedFilePath);
 
@@ -194,8 +196,6 @@ namespace SimpleDragAndDropWindow
           shouldValidate = false;
           break;
       }
-
-
         using (TextReader stReader = new StringReader(TextBox_XMlDisplay.Text))
         {
           var reader = XmlReader.Create(stReader, settings);
@@ -223,5 +223,59 @@ namespace SimpleDragAndDropWindow
       else
         MessageBox.Show(args.Message + args.Message, "Validation Failed", MessageBoxButton.OK, MessageBoxImage.Error);
     }
+
+    private IDictionary<string, string> _apiProcessCodeDict;
+
+    private void PopulateApiDropdown()
+    {
+      foreach (var api in _apiProcessCodeDict)
+      {
+        CbmBox_API.Items.Add(api.Key);
+      }
+
+      if (CbmBox_API.Items.Count > 0) CbmBox_API.SelectedItem = CbmBox_API.Items[0];
+    }
+
+    private  void PopulateFakeAPIs()
+    {
+      _apiProcessCodeDict =  new Dictionary<string, string>
+      {
+        {"API 1", "Process Code 1"},
+        {"API 2", "Process Code 2"},
+        {"API 3", "Process Code 3"},
+        {"API 4", "Process Code 4"},
+        {"API 5", "Process Code 5"}
+      };
+
+    }
+
+    private void Btn_Upload_OnClick(object sender, RoutedEventArgs e)
+    {
+      try
+      {
+        if (!FileLoaded) return;
+
+        var processCode = string.Empty;
+
+        if (string.IsNullOrEmpty(CbmBox_API.SelectedItem as string) ||
+            !_apiProcessCodeDict.TryGetValue(CbmBox_API.SelectedItem.ToString(), out processCode))
+          throw new Exception("API not selected");
+
+
+        if (MessageBox.Show(
+              string.Format("Upload file to API: {0}, Process Code: {1}?", CbmBox_API.SelectedItem, processCode),
+              "Upload", MessageBoxButton.OKCancel, MessageBoxImage.Information) == MessageBoxResult.Cancel) return;
+
+        MessageBox.Show("Uploaded!", "Upload", MessageBoxButton.OK, MessageBoxImage.Information);
+
+      }
+      catch (Exception ex)
+      {
+        MessageBox.Show(ex.Message, "Error Uploading", MessageBoxButton.OK, MessageBoxImage.Error);
+
+      }
+    }
+
+
   }
 }
